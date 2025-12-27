@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Password Security Analyzer</title>
+
+<style>
+/* ===== GLOBAL ===== */
+* {
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    background:
+        radial-gradient(circle at 20% 10%, rgba(14,165,233,0.25), transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(2,132,199,0.2), transparent 45%),
+        #000814;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e5e7eb;
+    animation: glowMove 12s infinite alternate ease-in-out;
+}
+
+@keyframes glowMove {
+    from { background-position: 0% 0%, 100% 100%; }
+    to   { background-position: 100% 100%, 0% 0%; }
+}
+
+/* ===== PANEL ===== */
+.panel {
+    width: 430px;
+    padding: 36px;
+    background: rgba(2,6,23,0.92);
+    border-radius: 16px;
+    border: 1px solid rgba(56,189,248,0.6);
+    box-shadow:
+        0 0 25px rgba(14,165,233,0.35),
+        inset 0 0 20px rgba(14,165,233,0.05);
+    backdrop-filter: blur(8px);
+}
+
+h1 {
+    margin: 0;
+    color: #38bdf8;
+    font-size: 22px;
+}
+
+.subtitle {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-bottom: 26px;
+}
+
+/* ===== INPUT ===== */
+label {
+    font-size: 13px;
+    color: #cbd5f5;
+}
+
+.input-wrap {
+    position: relative;
+}
+
+input {
+    width: 100%;
+    padding: 12px 44px 12px 12px;
+    margin: 10px 0 22px;
+    background: #020617;
+    border: 1px solid #1e40af;
+    border-radius: 10px;
+    color: white;
+    font-size: 15px;
+    transition: border 0.25s, box-shadow 0.25s;
+}
+
+input:focus {
+    outline: none;
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56,189,248,0.4);
+}
+
+/* ===== EYE ICON ===== */
+.eye {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    width: 22px;
+    opacity: 0.8;
+}
+
+.eye:hover {
+    opacity: 1;
+}
+
+/* ===== BUTTON ===== */
+button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(90deg, #0284c7, #0ea5e9);
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #020617;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(14,165,233,0.4);
+}
+
+/* ===== RESULT ===== */
+#result {
+    margin-top: 26px;
+    display: none;
+    animation: fadeUp 0.4s ease;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.status {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.bar {
+    width: 100%;
+    height: 8px;
+    background: #020617;
+    border: 1px solid #1e3a8a;
+    border-radius: 6px;
+    margin: 14px 0;
+}
+
+.fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 6px;
+    transition: width 0.35s ease;
+}
+
+ul {
+    padding-left: 18px;
+    font-size: 13px;
+    color: #cbd5f5;
+}
+
+li {
+    margin-bottom: 6px;
+}
+
+.footer {
+    margin-top: 20px;
+    font-size: 11px;
+    color: #64748b;
+    text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+    <h1>Password Security Analyzer</h1>
+    <p class="subtitle">Evaluate password strength using security rules</p>
+
+    <label>Password</label>
+    <div class="input-wrap">
+        <input type="password" id="password" placeholder="Enter password">
+        <svg class="eye" onclick="togglePassword()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#38bdf8">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+    </div>
+
+    <button onclick="analyze()">Analyze Security</button>
+
+    <div id="result">
+        <div class="status" id="statusText"></div>
+        <div class="bar">
+            <div class="fill" id="barFill"></div>
+        </div>
+        <ul id="feedback"></ul>
+    </div>
+
+    <div class="footer">
+        Local analysis only. No data is stored.
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    const input = document.getElementById("password");
+    input.type = input.type === "password" ? "text" : "password";
+}
+
+function analyze() {
+    const pwd = document.getElementById("password").value;
+    const result = document.getElementById("result");
+    const statusText = document.getElementById("statusText");
+    const bar = document.getElementById("barFill");
+    const feedback = document.getElementById("feedback");
+
+    result.style.display = "block";
+    feedback.innerHTML = "";
+
+    let score = 0;
+
+    if (pwd.length >= 8) score++;
+    else feedback.innerHTML += "<li>Minimum 8 characters required</li>";
+
+    if (/[A-Z]/.test(pwd)) score++;
+    else feedback.innerHTML += "<li>Add uppercase letters</li>";
+
+    if (/[a-z]/.test(pwd)) score++;
+    else feedback.innerHTML += "<li>Add lowercase letters</li>";
+
+    if (/[0-9]/.test(pwd)) score++;
+    else feedback.innerHTML += "<li>Include numeric digits</li>";
+
+    if (/[@$!%*?&#]/.test(pwd)) score++;
+    else feedback.innerHTML += "<li>Add special characters</li>";
+
+    if (score <= 2) {
+        statusText.textContent = "Insecure Password";
+        statusText.style.color = "#ef4444";
+        bar.style.width = "30%";
+        bar.style.background = "#ef4444";
+    } 
+    else if (score <= 4) {
+        statusText.textContent = "Moderate Security";
+        statusText.style.color = "#facc15";
+        bar.style.width = "65%";
+        bar.style.background = "#facc15";
+    } 
+    else {
+        statusText.textContent = "Secure Password";
+        statusText.style.color = "#22c55e";
+        bar.style.width = "100%";
+        bar.style.background = "#22c55e";
+    }
+}
+</script>
+
+</body>
+</html>
