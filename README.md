@@ -19,8 +19,8 @@ A clean and professional password security analyzer built using **HTML, CSS, and
 - CSS
 - JavaScript
 
-## 📸 Demo
-Open `index.html` in any modern browser.
+## 📸 interface
+Open <img width="1906" height="906" alt="image" src="https://github.com/user-attachments/assets/2ce69e61-9a5a-42ff-9ce8-0841816276b2" />
 
 ## 📌 Purpose
 This project was built to demonstrate frontend skills and basic cybersecurity concepts.
